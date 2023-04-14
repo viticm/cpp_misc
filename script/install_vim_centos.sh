@@ -23,6 +23,9 @@ function warning_message() {
   echo -e "\e[0;33;1mwarning: ${message}\e[0m"
 }
 
+# Remove all .cache files.
+find ./ -name "*.cache" | xargs rm -f
+
 sudo yum -y install python3
 [[ $? -ne 0 ]] && error_message "install python3 failed"
 
