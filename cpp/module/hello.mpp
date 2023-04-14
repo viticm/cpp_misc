@@ -1,0 +1,8 @@
+module;
+#include <iostream>
+
+export module hello;
+
+export void hello(std::string name) {
+  std::cout << "name: " << name << std::endl;
+}

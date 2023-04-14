@@ -1,2 +1,2 @@
 # cpp_misc
-The cpp misc
+The useful tool and source with new standard(c++23).
