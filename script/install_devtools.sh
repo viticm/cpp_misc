@@ -34,7 +34,7 @@ yumversion=`yum --version | head -1`
 # Install base tools.
 sudo yum -y groupinstall "Development Tools"
 sudo yum -y install git
-sudo yum -y wget
+sudo yum -y install wget
 
 # Install gcc by version(This can use install_withsource function future)
 # Also can clone with git like: git clone git://gcc.gnu.org/git/gcc.git
