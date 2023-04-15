@@ -55,7 +55,7 @@ function install_gcc() {
   ../configure --prefix=$installpath --enable-bootstrap \
     --enable-checking=release --enable-languages=c,c++ --disable-multilib
   make && sudo make install
-  [ $? != 0 ] && error_message "Have error Install gcc"
+  [ $? != 0 ] && error_message "Have error install gcc"
   sudo cp ${curdir}/enable_gcc $installpath
   local enablefile=${installpath}/enable_gcc
   sudo sed -i "s;\${installpath};${installpath};g" $enablefile
@@ -102,15 +102,16 @@ function install_withsource() {
   cd $packagename
   [[ $configurecmd != "" ]] && $configurecmd
   $makecmd && sudo make install
-  [ $? != 0 ] && error_message "Have error Install ${name}"
+  [ $? != 0 ] && error_message "Have error install ${name}"
 
   # After installed.
   [[ $installedcmd != "" ]] && $installedcmd
-  [ $? != 0 ] && error_message "Have error Install ${name}"
+  [[ $installedcmd != "" ]] && [ $? != 0 ] && \
+    error_message "Have error install ${name}"
 
   # Check version.
   local cur_version=`echo ${versioncmd} | sh`
-  [[ $cur_luaversion != $luaversion ]] && error_message "Install ${name} failed"
+  [[ $cur_version != $version ]] && error_message "Install ${name} failed"
 }
 
 # Install lua.
@@ -131,7 +132,9 @@ function install_luarocks() {
   local version=${1}
   local baseurl=https://luarocks.github.io/luarocks/releases
   local versioncmd="luarocks --version | head -1 | awk '{print \$2}'"
-  install_withsource luarocks ${version} "$baseurl" "$versioncmd"
+  local configurecmd="./configure"
+  install_withsource luarocks ${version} "$baseurl" "$versioncmd" \
+    "$configurecmd"
 }
 
 # Install lua check.
@@ -158,6 +161,7 @@ function install_other() {
 # Check need install by gcc version.
 [ ${gccversion} != "default" ] && install_gcc ${gccversion}
 
+sudo yum -y install lua-devel
 # Check need install by lua version.
 [ ${luaversion} != "default" ] && install_lua ${luaversion}
 
