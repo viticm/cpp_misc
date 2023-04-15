@@ -100,12 +100,12 @@ function install_withsource() {
   # Build and make install.
   tar -xzvf $packagename
   cd $packagename
-  [ $configurecmd != "" ] && $configurecmd
+  [[ $configurecmd != "" ]] && $configurecmd
   $makecmd && sudo make install
   [ $? != 0 ] && error_message "Have error Install ${name}"
 
   # After installed.
-  [ $installedcmd != "" ] && $installedcmd
+  [[ $installedcmd != "" ]] && $installedcmd
   [ $? != 0 ] && error_message "Have error Install ${name}"
 
   # Check version.
