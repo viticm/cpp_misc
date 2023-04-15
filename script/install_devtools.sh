@@ -110,7 +110,7 @@ function install_withsource() {
 
   # Check version.
   local cur_version=`echo ${versioncmd} | sh`
-  [ $cur_luaversion != $luaversion ] && error_message "Install ${name} failed"
+  [[ $cur_luaversion != $luaversion ]] && error_message "Install ${name} failed"
 }
 
 # Install lua.
