@@ -9,6 +9,8 @@
 
 curdir=`pwd`
 
+alias sudo="sudo env PATH=$PATH"
+
 #print error message, red words
 #@param string message
 #@return void

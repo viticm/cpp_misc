@@ -11,6 +11,8 @@ curdir=`pwd`
 username=`whoami`
 for_alluser=0
 
+alias sudo="sudo env PATH=$PATH"
+
 #print error message, red words
 #@param string message
 #@return void
@@ -85,6 +87,11 @@ function install_withsource() {
   local version=${2}
   local baseurl=${3}
   local versioncmd=${4}
+  local curversion=`echo ${versioncmd} | sh`
+  if [[ $curversion == $version ]] ; then
+    warning_message "${name} already installed"
+    return
+  fi
   local configurecmd=${5}
   local makecmd=${6}
   [ "" == $makecmd ] && makecmd="make"
@@ -110,8 +117,8 @@ function install_withsource() {
     error_message "Have error install ${name}"
 
   # Check version.
-  local cur_version=`echo ${versioncmd} | sh`
-  [[ $cur_version != $version ]] && error_message "Install ${name} failed"
+  curversion=`echo ${versioncmd} | sh`
+  [[ $curversion != $version ]] && error_message "Install ${name} failed"
 }
 
 # Install lua.
@@ -166,6 +173,7 @@ sudo yum -y install lua-devel
 [ ${luaversion} != "default" ] && install_lua ${luaversion}
 
 install_luarocks ${luarocks_version}
+install_luacheck
 install_other
 
 [ 0 -eq $? ] && echo "Install develop tools success"
