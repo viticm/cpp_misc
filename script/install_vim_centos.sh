@@ -3,8 +3,13 @@
 # Put the script in vim source directory.
 # cn: 将该脚本放到vim的源码目录下，该脚本会自动安装插件所需的东西
 #     该脚本会自动删除所有.cache文件
+#     最好先执行install_cpp_devtools.sh再执行此脚本
 
 # 由于要启用提示插件，所以需要安装python3（python2系统自带）
+
+curdir=`pwd`
+
+sudo yum -y install git
 
 #print error message, red words
 #@param string message
@@ -22,6 +27,12 @@ function warning_message() {
   local message=${@}
   echo -e "\e[0;33;1mwarning: ${message}\e[0m"
 }
+
+[ ! -d vim ] && git clone https://github.com/vim/vim
+[ ! -d vim ] && error_message "vim directory not exists"
+
+# Begin install new vim from source.
+cd vim
 
 # Remove all .cache files.
 find ./ -name "*.cache" | xargs rm -f
@@ -54,3 +65,11 @@ make && sudo make install
 # cn: 提示插件必须要这个，否则提示不了
 sudo pip3 install pynvim
 [[ $? -ne 0 ]] && error_message "pynvim install failed"
+
+# Begin install vimrc.
+cd $curdir
+[ ! -d vimrc ] && git clone https://github.com/viticm/vimrc
+[ ! -d vimrc ] && error_message "vimrc directory not exists"
+
+cd vimrc && sh install.sh --full
+[[ $? -ne 0 ]] && error_message "vimrc install failed"
