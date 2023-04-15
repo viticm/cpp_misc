@@ -9,11 +9,6 @@ curdir=`pwd`
 username=`whoami`
 for_alluser=0
 
-# Install base tools.
-sudo yum -y groupinstall "Development Tools"
-sudo yum -y install git
-sudo yum -y wget
-
 #print error message, red words
 #@param string message
 #@return void
@@ -30,6 +25,14 @@ function warning_message() {
   local message=${@}
   echo -e "\e[0;33;1mwarning: ${message}\e[0m"
 }
+
+yumversion=`yum --version | head -1`
+[ $? -ne 0 ] && error_message "Install script need yum"
+
+# Install base tools.
+sudo yum -y groupinstall "Development Tools"
+sudo yum -y install git
+sudo yum -y wget
 
 # Install gcc by version
 # Also can clone with git like: git clone git://gcc.gnu.org/git/gcc.git

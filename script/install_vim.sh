@@ -9,8 +9,6 @@
 
 curdir=`pwd`
 
-sudo yum -y install git
-
 #print error message, red words
 #@param string message
 #@return void
@@ -27,6 +25,11 @@ function warning_message() {
   local message=${@}
   echo -e "\e[0;33;1mwarning: ${message}\e[0m"
 }
+
+yumversion=`yum --version | head -1`
+[ $? -ne 0 ] && error_message "Install script need yum"
+
+sudo yum -y install git
 
 [ ! -d vim ] && git clone https://github.com/vim/vim
 [ ! -d vim ] && error_message "vim directory not exists"
