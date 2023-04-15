@@ -58,13 +58,13 @@ function install_gcc() {
   tar -xzvf $packagename
   cd gcc-${gccversion} && mkdir dependent
   ./contrib/download_prerequisites --directory=dependent
-  local findcmd="find ./dependent/ -maxdepth 1 -type d -name "
+  local findcmd="find ./dependent/ -maxdepth 1 -type d -name"
   ln -s `$findcmd gmp-*` gmp
   ln -s `$findcmd mpfr-*` mpfr
   ln -s `$findcmd mpc-*` mpc
   ln -s `$findcmd isl-*` isl
   [ $? != 0 ] && error_message "Have error install gcc"
-  mkdir build && cd build
+  mkdir -p build && cd build
 
   ../configure --prefix=$installpath --enable-bootstrap \
     --enable-checking=release --enable-languages=c,c++ --disable-multilib
