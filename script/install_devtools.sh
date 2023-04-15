@@ -77,6 +77,9 @@ function install_other() {
   sudo yum -y install netstat
   sudo yum -y install telnet
   sudo yum -y install tcpdump
+  # Other
+  sudo yum -y install lrzsz
+  sudo yum -y install cmake
 }
 
 # Check need install by gcc version.
