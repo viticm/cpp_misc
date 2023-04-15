@@ -45,13 +45,18 @@ sudo yum -y install wget
 function install_gcc() {
   cd $curdir
   local version=${1}
+  local cur_gccversion=`gcc --version | head -1 | awk '{print $3}'`
+  if [[ $cur_gccversion == $version ]] ; then
+    warning_message "gcc already installed"
+    return
+  fi
   local packagename=gcc-${version}.tar.gz
   local baseurl=https://mirrors.nju.edu.cn/gnu/gcc
   local installpath=/usr/local/opt/gcc-${gccversion}
   [ ! -f $packagename ] && wget -c ${baseurl}/gcc-${gccversion}/${packagename}
   [ ! -f $packagename ] && error_message "Can't found package: ${packagename}"
   tar -xzvf $packagename
-  cd gcc-${gccversion}
+  cd gcc-${gccversion} && mkdir dependent
   ./contrib/download_prerequisites --directory=dependent
   local findcmd="find ./dependent/ -maxdepth 1 -type d -name "
   ln -s `$findcmd gmp-*` gmp
@@ -76,7 +81,7 @@ function install_gcc() {
     source ~/.bashrc
   fi
   [ $? != 0 ] && error_message "Have error install gcc"
-  local cur_gccversion=`gcc --version | head -1 | awk '{print $3}'`
+  cur_gccversion=`gcc --version | head -1 | awk '{print $3}'`
   [ $cur_gccversion != $gccversion ] && error_message "Install gcc failed"
 }
 
