@@ -51,8 +51,15 @@ function install_gcc() {
   [ ! -f $packagename ] && wget -c ${baseurl}/gcc-${gccversion}/${packagename}
   [ ! -f $packagename ] && error_message "Can't found package: ${packagename}"
   tar -xzvf $packagename
-  cd gcc-${gccversion} && mkdir build && cd build
+  cd gcc-${gccversion}
+  ./contrib/download_prerequisites --directory=dependent
+  local findcmd="find ./dependent/ -maxdepth 1 -type d -name "
+  ln -s `$findcmd gmp-*` gmp
+  ln -s `$findcmd mpfr-*` mpfr
+  ln -s `$findcmd mpc-*` mpc
+  ln -s `$findcmd isl-*` isl
   [ $? != 0 ] && error_message "Have error install gcc"
+  mkdir build && cd build
 
   ../configure --prefix=$installpath --enable-bootstrap \
     --enable-checking=release --enable-languages=c,c++ --disable-multilib
