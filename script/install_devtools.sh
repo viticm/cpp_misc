@@ -5,6 +5,8 @@
 #     默认指定版本的gcc只对当前用户生效，如果想要所有用户有效请修改for_alluser=1
 
 gccversion="default"
+luaversion="default"
+luarocks_version="3.9.2"
 curdir=`pwd`
 username=`whoami`
 for_alluser=0
@@ -34,11 +36,12 @@ sudo yum -y groupinstall "Development Tools"
 sudo yum -y install git
 sudo yum -y wget
 
-# Install gcc by version
+# Install gcc by version(This can use install_withsource function future)
 # Also can clone with git like: git clone git://gcc.gnu.org/git/gcc.git
 # @param version The gcc version, not exists will download from network.
 # @return void
 function install_gcc() {
+  cd $curdir
   local version=${1}
   local packagename=gcc-${version}.tar.gz
   local baseurl=https://mirrors.nju.edu.cn/gnu/gcc
@@ -47,12 +50,12 @@ function install_gcc() {
   [ ! -f $packagename ] && error_message "Can't found package: ${packagename}"
   tar -xzvf $packagename
   cd gcc-${gccversion} && mkdir build && cd build
-  [ $? != 0 ] && error_message "Have error"
+  [ $? != 0 ] && error_message "Have error install gcc"
 
   ../configure --prefix=$installpath --enable-bootstrap \
     --enable-checking=release --enable-languages=c,c++ --disable-multilib
   make && sudo make install
-  [ $? != 0 ] && error_message "Have error"
+  [ $? != 0 ] && error_message "Have error Install gcc"
   sudo cp ${curdir}/enable_gcc $installpath
   local enablefile=${installpath}/enable_gcc
   sudo sed -i "s;\${installpath};${installpath};g" $enablefile
@@ -63,9 +66,79 @@ function install_gcc() {
     echo "source ${enablefile}" >> ~/.bashrc
     source ~/.bashrc
   fi
-  [ $? != 0 ] && error_message "Have error"
+  [ $? != 0 ] && error_message "Have error install gcc"
   local cur_gccversion=`gcc --version | head -1 | awk '{print $3}'`
-  [ $cur_gccversion != $gccversion ] && "Install gcc failed"
+  [ $cur_gccversion != $gccversion ] && error_message "Install gcc failed"
+}
+
+# Install by source code.
+# @param string name The soft name.
+# @param string version The package version.
+# @param string baseurl The package download base url.
+# @param string versioncmd The get version cmd string.
+# @param string makecmd If empty then defalt use "make".
+# @param string configurecmd If empty then not excute before make.
+# @param string installedcmd If empty then not excute after make install.
+function install_withsource() {
+  cd $curdir
+  local name=${1}
+  local version=${2}
+  local baseurl=${3}
+  local versioncmd=${4}
+  local configurecmd=${5}
+  local makecmd=${6}
+  [ "" == $makecmd ] && makecmd="make"
+  local installedcmd=${7}
+  if [[ "" == $name || "" == $version ||
+        "" == $baseurl || "" == $versioncmd ]] ; then
+    error_message "install ${name} check param failed"
+  fi
+  local packagename=${name}-${version}.tar.gz
+  [ ! -f $packagename ] && wget -c ${baseurl}/${packagename}
+  [ ! -f $packagename ] && error_message "Can't found package: ${packagename}"
+
+  # Build and make install.
+  tar -xzvf $packagename
+  cd $packagename
+  [ $configurecmd != "" ] && $configurecmd
+  $makecmd && sudo make install
+  [ $? != 0 ] && error_message "Have error Install ${name}"
+
+  # After installed.
+  [ $installedcmd != "" ] && $installedcmd
+  [ $? != 0 ] && error_message "Have error Install ${name}"
+
+  # Check version.
+  local cur_version=`echo ${versioncmd} | sh`
+  [ $cur_luaversion != $luaversion ] && error_message "Install ${name} failed"
+}
+
+# Install lua.
+# @return void
+function install_lua() {
+  local version=${1}
+  local baseurl=http://www.lua.org/ftp
+  local versioncmd="lua -v | awk '{print \$2}'"
+  local configurecmd="./configure"
+  local makecmd="make linux"
+  install_withsource lua ${version} "$baseurl" "$versioncmd" "$configurecmd" \
+    "$makecmd"
+}
+
+# Install luarocks.
+# @return void
+function install_luarocks() {
+  local version=${1}
+  local baseurl=https://luarocks.github.io/luarocks/releases
+  local versioncmd="luarocks --version | head -1 | awk '{print \$2}'"
+  install_withsource luarocks ${version} "$baseurl" "$versioncmd"
+}
+
+# Install lua check.
+# @return void
+function install_luacheck() {
+  sudo luarocks install luacheck
+  [ $? != 0 ] && error_message "install luacheck error"
 }
 
 # Install other tools.
@@ -85,6 +158,10 @@ function install_other() {
 # Check need install by gcc version.
 [ ${gccversion} != "default" ] && install_gcc ${gccversion}
 
+# Check need install by lua version.
+[ ${luaversion} != "default" ] && install_lua ${luaversion}
+
+install_luarocks ${luarocks_version}
 install_other
 
 [ 0 -eq $? ] && echo "Install develop tools success"
