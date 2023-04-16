@@ -42,7 +42,7 @@ cd vim
 # Remove all .cache files.
 find ./ -name "*.cache" | xargs rm -f
 
-sudo yum -y install python3
+sudo yum -y install python3 && sudo yum -y install python3-devel
 [[ $? -ne 0 ]] && error_message "install python3 failed"
 
 python_conf_dir=`find /usr/lib64/python3*/config*/ | head -1`
