@@ -128,7 +128,7 @@ function install_withsource() {
 
   # Build and make install.
   tar -xzvf $packagename
-  cd $packagename
+  cd ${name}-${version}
   [[ $configurecmd != "" ]] && $configurecmd
   $makecmd && sudo make install
   [ $(successed) != 0 ] && error_message "have error install ${name}"
@@ -149,10 +149,8 @@ function install_lua() {
   local version=${1}
   local baseurl=http://www.lua.org/ftp
   local versioncmd="lua -v | awk '{print \$2}'"
-  local configurecmd="./configure"
   local makecmd="make linux"
-  install_withsource lua ${version} "$baseurl" "$versioncmd" "$configurecmd" \
-    "$makecmd"
+  install_withsource lua ${version} "$baseurl" "$versioncmd" "" "$makecmd"
 }
 
 # Install luarocks.
@@ -198,4 +196,4 @@ install_luarocks ${luarocks_version}
 install_luacheck
 install_other
 
-[ 0 == $(successed) ] && echo "Install develop tools success"
+[ 0 == $(successed) ] && echo "install develop tools success"
