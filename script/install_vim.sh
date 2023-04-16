@@ -72,7 +72,7 @@ make && sudo make install
 # cn: 提示插件必须要这个，否则提示不了
 sudo pip3 install pynvim
 [[ $? -ne 0 ]] && error_message "pynvim install failed"
-sudo yum -y instal ctags && sudo yum -y install cscope
+sudo yum -y install ctags && sudo yum -y install cscope
 [[ $? -ne 0 ]] && error_message "ctags or cscope install failed"
 
 # Begin install vimrc.
