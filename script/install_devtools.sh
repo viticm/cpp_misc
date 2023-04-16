@@ -30,6 +30,16 @@ function warning_message() {
   echo -e "\e[0;33;1mwarning: ${message}\e[0m"
 }
 
+# Check the shell if success.
+# @return number
+function successed() {
+  local code=$?
+  if [[ 1 == $code ]] ; then
+    code=0
+  fi
+  echo $code
+}
+
 yumversion=`yum --version | head -1`
 [ $? -ne 0 ] && error_message "Install script need yum"
 
@@ -56,20 +66,20 @@ function install_gcc() {
   [ ! -f $packagename ] && wget -c ${baseurl}/gcc-${gccversion}/${packagename}
   [ ! -f $packagename ] && error_message "Can't found package: ${packagename}"
   tar -xzvf $packagename
-  cd gcc-${gccversion} && mkdir dependent
+  cd gcc-${gccversion} && mkdir -p dependent
   ./contrib/download_prerequisites --directory=dependent
   local findcmd="find ./dependent/ -maxdepth 1 -type d -name"
-  ln -s `$findcmd gmp-*` gmp
-  ln -s `$findcmd mpfr-*` mpfr
-  ln -s `$findcmd mpc-*` mpc
-  ln -s `$findcmd isl-*` isl
-  [ $? != 0 ] && error_message "Have error install gcc"
+  [ ! -d gmp ] && ln -s `$findcmd gmp-*` gmp
+  [ ! -d mpfr ] && ln -s `$findcmd mpfr-*` mpfr
+  [ ! -d mpc ] && ln -s `$findcmd mpc-*` mpc
+  [ ! -d isl ] && ln -s `$findcmd isl-*` isl
+  [[ $(successed) != 0 ]] && error_message "have error install gcc"
   mkdir -p build && cd build
 
   ../configure --prefix=$installpath --enable-bootstrap \
     --enable-checking=release --enable-languages=c,c++ --disable-multilib
   make && sudo make install
-  [ $? != 0 ] && error_message "Have error install gcc"
+  [ $(successed) != 0 ] && error_message "have error install gcc"
   sudo cp ${curdir}/enable_gcc $installpath
   local enablefile=${installpath}/enable_gcc
   sudo sed -i "s;\${installpath};${installpath};g" $enablefile
@@ -80,7 +90,7 @@ function install_gcc() {
     echo "source ${enablefile}" >> ~/.bashrc
     source ~/.bashrc
   fi
-  [ $? != 0 ] && error_message "Have error install gcc"
+  [ $(successed) != 0 ] && error_message "have error install gcc"
   cur_gccversion=`gcc --version | head -1 | awk '{print $3}'`
   [ $cur_gccversion != $gccversion ] && error_message "Install gcc failed"
 }
@@ -121,12 +131,12 @@ function install_withsource() {
   cd $packagename
   [[ $configurecmd != "" ]] && $configurecmd
   $makecmd && sudo make install
-  [ $? != 0 ] && error_message "Have error install ${name}"
+  [ $(successed) != 0 ] && error_message "have error install ${name}"
 
   # After installed.
   [[ $installedcmd != "" ]] && $installedcmd
-  [[ $installedcmd != "" ]] && [ $? != 0 ] && \
-    error_message "Have error install ${name}"
+  [[ $installedcmd != "" ]] && [ $(successed) != 0 ] && \
+    error_message "have error install ${name}"
 
   # Check version.
   curversion=`echo ${versioncmd} | sh`
@@ -160,7 +170,7 @@ function install_luarocks() {
 # @return void
 function install_luacheck() {
   sudo luarocks install luacheck
-  [ $? != 0 ] && error_message "install luacheck error"
+  [ $(successed) != 0 ] && error_message "install luacheck error"
 }
 
 # Install other tools.
@@ -188,4 +198,4 @@ install_luarocks ${luarocks_version}
 install_luacheck
 install_other
 
-[ 0 -eq $? ] && echo "Install develop tools success"
+[ 0 == $(successed) ] && echo "Install develop tools success"
