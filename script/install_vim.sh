@@ -31,6 +31,8 @@ function warning_message() {
 yumversion=`yum --version | head -1`
 [ $? -ne 0 ] && error_message "Install script need yum"
 
+# Also can download from: http://ftp.vim.org/pub/vim/unix/ but not new.
+
 sudo yum -y install git
 
 [ ! -d vim ] && git clone https://github.com/vim/vim
