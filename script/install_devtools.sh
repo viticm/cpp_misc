@@ -7,6 +7,7 @@
 gccversion="default"
 luaversion="default"
 luarocks_version="3.9.2"
+clangversion="default"
 curdir=`pwd`
 username=`whoami`
 for_alluser=0
@@ -55,18 +56,18 @@ sudo yum -y install wget
 function install_gcc() {
   cd $curdir
   local version=${1}
-  local cur_gccversion=`gcc --version | head -1 | awk '{print $3}'`
-  if [[ $cur_gccversion == $version ]] ; then
+  local cur_version=`gcc --version | head -1 | awk '{print $3}'`
+  if [[ $cur_version == $version ]] ; then
     warning_message "gcc already installed"
     return
   fi
   local packagename=gcc-${version}.tar.gz
   local baseurl=https://mirrors.nju.edu.cn/gnu/gcc
-  local installpath=/usr/local/opt/gcc-${gccversion}
-  [ ! -f $packagename ] && wget -c ${baseurl}/gcc-${gccversion}/${packagename}
+  local installpath=/usr/local/opt/gcc-${version}
+  [ ! -f $packagename ] && wget -c ${baseurl}/gcc-${version}/${packagename}
   [ ! -f $packagename ] && error_message "Can't found package: ${packagename}"
   tar -xzvf $packagename
-  cd gcc-${gccversion} && mkdir -p dependent
+  cd gcc-${version} && mkdir -p dependent
   ./contrib/download_prerequisites --directory=dependent
   local findcmd="find ./dependent/ -maxdepth 1 -type d -name"
   [ ! -d gmp ] && ln -s `$findcmd gmp-*` gmp
@@ -91,8 +92,53 @@ function install_gcc() {
     source ~/.bashrc
   fi
   [ $(successed) != 0 ] && error_message "have error install gcc"
-  cur_gccversion=`gcc --version | head -1 | awk '{print $3}'`
-  [ $cur_gccversion != $gccversion ] && error_message "Install gcc failed"
+  cur_version=`gcc --version | head -1 | awk '{print $3}'`
+  [ $cur_version != $version ] && error_message "Install gcc failed"
+}
+
+# Install clang by version(This can use install_withsource function future)
+# @param version The clang version, not exists will download from network.
+# @return void
+function install_clang() {
+  cd $curdir
+  local version=${1}
+  local cur_version=`clang --version | head -1 | awk '{print $3}'`
+  if [[ $cur_version == $version ]] ; then
+    warning_message "clang already installed"
+    return
+  fi
+  sudo yum -y install llvm llvm-devel
+  [ $(successed) != 0 ] && error_message "have error install clang with llvm"
+  local baseurl=https://github.com/llvm/llvm-project/releases/download
+  local llvmpackage=llvm-${version}.src.tar.gz
+  [ ! -f $llvmpackage ] && wget -c ${baseurl}/llvmorg--${version}/${llvmpackage}
+  tar -xvf $llvmpackage
+  cd llvm-${version}.src
+  mkdir build && cd build
+  cmake -DLLVM_INCLUDE_TESTS=0 ../ && make && make install
+  [ $(successed) != 0 ] && error_message "have error install clang with llvm"
+
+  cd $curdir
+  local packagename=clang-${version}.src.tar.xz
+  local installpath=/usr/local/opt/clang-${version}
+  [ ! -f $packagename ] && wget -c ${baseurl}/llvmorg--${version}/${packagename}
+  [ ! -f $packagename ] && error_message "Can't found package: ${packagename}"
+  tar -xvf $packagename
+  cd clang-${gccversion}.src
+  local cmakepackage=cmake-${version}.src.tar.xz
+  [ ! -f $cmakepackage ] && wget -c ${baseurl}/llvmorg--${version}/${cmakepackage}
+  [ ! -f $cmakepackage ] && error_message "Can't found package: ${cmakepackage}"
+  tar -xvf $cmakepackage
+  mkdir -p ../cmake
+  cp cmake-${version}.src/* ../cmake/ -r
+
+  mkdir -p build && cd build
+
+  cmake -DCMAKE_INSTALL_PREFIX=$installpath ../
+  make && sudo make install
+  [ $(successed) != 0 ] && error_message "have error install clang"
+  cur_version=`clang --version | head -1 | awk '{print $3}'`
+  [ $cur_version != $version ] && error_message "Install clang failed"
 }
 
 # Install by source code.
@@ -187,6 +233,9 @@ function install_other() {
 
 # Check need install by gcc version.
 [ ${gccversion} != "default" ] && install_gcc ${gccversion}
+
+# Check need install by clang version.
+# [ ${clangversion} != "default" ] && install_clang ${clangversion}
 
 sudo yum -y install lua-devel
 # Check need install by lua version.
