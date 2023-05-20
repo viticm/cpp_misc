@@ -1,0 +1,19 @@
+# General environment variables
+export PATH=${installpath}/bin${PATH:+:${PATH}}
+export MANPATH=${installpath}/share/man:${MANPATH}
+export INFOPATH=${installpath}/share/info${INFOPATH:+:${INFOPATH}}
+export PCP_DIR=${installpath}
+# bz847911 workaround:
+# we need to evaluate rpm's installed run-time % { _libdir }, not rpmbuild time
+# or else /etc/ld.so.conf.d files?
+rpmlibdir=$(rpm --eval "%{_libdir}")
+#echo $rpmlibdir
+# bz1017604: On 64-bit hosts, we should include also the 32-bit library path.
+# bz1873882: On 32-bit hosts, we should include also the 64-bit library path.
+rpmlibdir64=":${installpath}/lib64"
+dynpath64="$rpmlibdir64/dyninst"
+# Add SCL dyninst to LD_LIBRARY_PATH, both 64- and 32-bit paths.
+export LD_LIBRARY_PATH=${installpath}$rpmlibdir/dyninst$dynpath64$dynpath32${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+# Now prepend the usual /opt/.../usr/lib{64,}.
+export LD_LIBRARY_PATH=${installpath}$rpmlibdir$rpmlibdir64$rpmlibdir32${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+export PKG_CONFIG_PATH=${installpath}/lib64/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}

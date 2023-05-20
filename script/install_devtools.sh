@@ -82,7 +82,7 @@ function install_gcc() {
   make && sudo make install
   [ $(successed) != 0 ] && error_message "have error install gcc"
   sudo cp ${curdir}/enable_gcc $installpath
-  local enablefile=${installpath}/enable_gcc
+  local enablefile=${installpath}/enable
   sudo sed -i "s;\${installpath};${installpath};g" $enablefile
   if [[ $for_alluser -eq 1 ]] ; then
     sudo echo "source ${enablefile}" >> /etc/profile
@@ -138,6 +138,18 @@ function install_clang() {
   cmake -DCMAKE_INSTALL_PREFIX=$installpath -DCMAKE_BUILD_TYPE=Release ../
   make && sudo make install
   [ $(successed) != 0 ] && error_message "have error install clang"
+  sudo cp ${curdir}/enable $installpath
+  local enablefile=${installpath}/enable
+  sudo sed -i "s;\${installpath};${installpath};g" $enablefile
+  [ ! -d ${installpath}/lib64 ] && \
+    sudo ln -s ${installpath}/lib ${installpath}/lib64
+  if [[ $for_alluser -eq 1 ]] ; then
+    sudo echo "source ${enablefile}" >> /etc/profile
+    sudo source /etc/profile
+  else
+    echo "source ${enablefile}" >> ~/.bashrc
+    source ~/.bashrc
+  fi
   cur_version=`clang --version | head -1 | awk '{print $3}'`
   [ $cur_version != $version ] && error_message "Install clang failed"
 }
