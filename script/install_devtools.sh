@@ -115,7 +115,8 @@ function install_clang() {
   tar -xvf $llvmpackage
   cd llvm-${version}.src
   mkdir build && cd build
-  cmake -DLLVM_INCLUDE_TESTS=0 ../ && make && make install
+  cmake -DLLVM_INCLUDE_TESTS=0 -DCMAKE_BUILD_TYPE=Release ../ && \
+    make && make install
   [ $(successed) != 0 ] && error_message "have error install clang with llvm"
 
   cd $curdir
@@ -134,7 +135,7 @@ function install_clang() {
 
   mkdir -p build && cd build
 
-  cmake -DCMAKE_INSTALL_PREFIX=$installpath ../
+  cmake -DCMAKE_INSTALL_PREFIX=$installpath -DCMAKE_BUILD_TYPE=Release ../
   make && sudo make install
   [ $(successed) != 0 ] && error_message "have error install clang"
   cur_version=`clang --version | head -1 | awk '{print $3}'`
