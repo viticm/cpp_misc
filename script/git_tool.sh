@@ -97,7 +97,7 @@ function commit() {
     echo 'files: '$files
     if [[ $files != '' ]] ; then
       git add $files
-      git commit -m '$log'
+      git commit -m "$log"
       #echo "git commit -m '$log'"
     fi
   fi
