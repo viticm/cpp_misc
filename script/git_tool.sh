@@ -74,7 +74,8 @@ function commit() {
     ((++i))
     if (($i >= 3 )); then
       # echo $var
-      local list=`git status -s $var | awk '{print $2}'`
+      local list=`git status -s $var | grep -v cscope |
+        grep -v tags | awk '{print $2}'`
       for path in $list
       do
         local status=`git status -s $path | awk '{print $1}'`
