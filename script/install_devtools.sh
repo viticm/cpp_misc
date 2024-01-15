@@ -301,6 +301,9 @@ function install_other() {
 # Check need install by gcc version.
 [ ${gccversion} != "default" ] && install_gcc ${gccversion}
 
+# Check need install by gdb version.
+[ ${gdbversion} != "default" ] && install_gdb ${gdbversion}
+
 # Check need install by clang version.
 # [ ${clangversion} != "default" ] && install_clang ${clangversion}
 
