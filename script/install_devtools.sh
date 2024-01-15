@@ -103,7 +103,7 @@ function install_gcc() {
 function install_gdb() {
   cd $curdir
   local version=${1}
-  local cur_version=`gdb --version | head -1 | awk '{print $3}'`
+  local cur_version=`gdb --version | head -1 | awk '{print $4}'`
   if [[ $cur_version == $version ]] ; then
     warning_message "gdb already installed"
     return
