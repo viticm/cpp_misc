@@ -5,6 +5,7 @@
 #     默认指定版本的gcc只对当前用户生效，如果想要所有用户有效请修改for_alluser=1
 
 gccversion="default"
+gdbversion="default"
 luaversion="default"
 luarocks_version="3.9.2"
 clangversion="default"
@@ -94,6 +95,59 @@ function install_gcc() {
   [ $(successed) != 0 ] && error_message "have error install gcc"
   cur_version=`gcc --version | head -1 | awk '{print $3}'`
   [ $cur_version != $version ] && error_message "Install gcc failed"
+}
+
+# Install gdb by version(This can use install_withsource function future)
+# @param version The gcc version, not exists will download from network.
+# @return void
+function install_gdb() {
+  cd $curdir
+  local version=${1}
+  local cur_version=`gdb --version | head -1 | awk '{print $3}'`
+  if [[ $cur_version == $version ]] ; then
+    warning_message "gdb already installed"
+    return
+  fi
+  local packagename=gdb-${version}.tar.gz
+  local baseurl=https://mirrors.nju.edu.cn/gnu/gdb
+  local installpath=/usr/local/opt/gdb-${version}
+  [ ! -f $packagename ] && wget -c ${baseurl}/gdb-${version}/${packagename}
+  [ ! -f $packagename ] && error_message "Can't found package: ${packagename}"
+  tar -xzvf $packagename
+  cd gdb-${version} && mkdir -p dependent
+
+  cd dependent
+  local findcmd="find ./dependent/ -maxdepth 1 -type d -name"
+  if [ ! -d gmp ] ; then
+    wget -c https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz
+    tar -Jvxf gmp-6.2.1.tar.xz
+  fi
+  if [ ! -d mpfr ] ; then
+    wget -c https://www.mpfr.org/mpfr-current/mpfr-4.1.0.tar.gz
+    tar -Jvxf mpfr-4.1.0.tar.gz
+  fi
+  cd $curdir/gdb-${version}
+  [ ! -d gmp ] && ln -s `$findcmd gmp-*` gmp
+  [ ! -d mpfr ] && ln -s `$findcmd mpfr-*` mpfr
+  [[ $(successed) != 0 ]] && error_message "have error install gdb"
+  mkdir -p build && cd build
+
+  ../configure --prefix=$installpath --enable-bootstrap
+  make && sudo make install
+  [ $(successed) != 0 ] && error_message "have error install gdb"
+  sudo cp ${curdir}/enable_gdb $installpath
+  local enablefile=${installpath}/enable
+  sudo sed -i "s;\${installpath};${installpath};g" $enablefile
+  if [[ $for_alluser -eq 1 ]] ; then
+    sudo echo "source ${enablefile}" >> /etc/profile
+    sudo source /etc/profile
+  else
+    echo "source ${enablefile}" >> ~/.bashrc
+    source ~/.bashrc
+  fi
+  [ $(successed) != 0 ] && error_message "have error install gdb"
+  cur_version=`gdb --version | head -1 | awk '{print $3}'`
+  [ $cur_version != $version ] && error_message "Install gdb failed"
 }
 
 # Install clang by version(This can use install_withsource function future)
