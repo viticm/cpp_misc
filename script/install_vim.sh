@@ -74,6 +74,8 @@ sudo pip3 install pynvim
 [[ $? -ne 0 ]] && error_message "pynvim install failed"
 sudo yum -y install ctags && sudo yum -y install cscope
 [[ $? -ne 0 ]] && error_message "ctags or cscope install failed"
+sudo yum -y install ag
+[[ $? -ne 0 ]] && error_message "ag install failed"
 
 # Begin install vimrc.
 cd $curdir
