@@ -4,8 +4,8 @@
 # cn: 安装c++的开发环境 可以指定gcc版本，默认情况下使用系统自带
 #     默认指定版本的gcc只对当前用户生效，如果想要所有用户有效请修改for_alluser=1
 
-gccversion="default"
-gdbversion="default"
+gccversion="13.2.0"
+gdbversion="14.2"
 luaversion="default"
 luarocks_version="3.9.2"
 clangversion="default"
@@ -82,7 +82,7 @@ function install_gcc() {
     --enable-checking=release --enable-languages=c,c++ --disable-multilib
   make && sudo make install
   [ $(successed) != 0 ] && error_message "have error install gcc"
-  sudo cp ${curdir}/enable_gcc $installpath
+  sudo cp ${curdir}/enable $installpath
   local enablefile=${installpath}/enable
   sudo sed -i "s;\${installpath};${installpath};g" $enablefile
   if [[ $for_alluser -eq 1 ]] ; then
@@ -135,7 +135,7 @@ function install_gdb() {
   ../configure --prefix=$installpath --enable-bootstrap
   make && sudo make install
   [ $(successed) != 0 ] && error_message "have error install gdb"
-  sudo cp ${curdir}/enable_gdb $installpath
+  sudo cp ${curdir}/enable $installpath
   local enablefile=${installpath}/enable
   sudo sed -i "s;\${installpath};${installpath};g" $enablefile
   if [[ $for_alluser -eq 1 ]] ; then
@@ -179,7 +179,7 @@ function install_clang() {
   [ ! -f $packagename ] && wget -c ${baseurl}/llvmorg--${version}/${packagename}
   [ ! -f $packagename ] && error_message "Can't found package: ${packagename}"
   tar -xvf $packagename
-  cd clang-${gccversion}.src
+  cd clang-${clangversion}.src
   local cmakepackage=cmake-${version}.src.tar.xz
   [ ! -f $cmakepackage ] && wget -c ${baseurl}/llvmorg--${version}/${cmakepackage}
   [ ! -f $cmakepackage ] && error_message "Can't found package: ${cmakepackage}"
