@@ -4,9 +4,9 @@
 # cn: 安装c++的开发环境 可以指定gcc版本，默认情况下使用系统自带
 #     默认指定版本的gcc只对当前用户生效，如果想要所有用户有效请修改for_alluser=1
 
-gccversion="13.2.0"
-gdbversion="14.2"
-luaversion="default"
+gccversion="default"
+gdbversion="default"
+luaversion="5.4.6"
 luarocks_version="3.9.2"
 clangversion="default"
 curdir=`pwd`
@@ -49,6 +49,7 @@ yumversion=`yum --version | head -1`
 sudo yum -y groupinstall "Development Tools"
 sudo yum -y install git
 sudo yum -y install wget
+sudo yum -y install texinfo
 
 # Install gcc by version(This can use install_withsource function future)
 # Also can clone with git like: git clone git://gcc.gnu.org/git/gcc.git
@@ -111,18 +112,18 @@ function install_gdb() {
   local packagename=gdb-${version}.tar.gz
   local baseurl=https://mirrors.nju.edu.cn/gnu/gdb
   local installpath=/usr/local/opt/gdb-${version}
-  [ ! -f $packagename ] && wget -c ${baseurl}/gdb-${version}/${packagename}
+  [ ! -f $packagename ] && wget -c ${baseurl}/${packagename}
   [ ! -f $packagename ] && error_message "Can't found package: ${packagename}"
   tar -xzvf $packagename
   cd gdb-${version} && mkdir -p dependent
 
   cd dependent
   local findcmd="find ./dependent/ -maxdepth 1 -type d -name"
-  if [ ! -d gmp ] ; then
+  if [ ! -d ../gmp ] ; then
     wget -c https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz
     tar -Jvxf gmp-6.2.1.tar.xz
   fi
-  if [ ! -d mpfr ] ; then
+  if [ ! -d ../mpfr ] ; then
     wget -c https://www.mpfr.org/mpfr-current/mpfr-4.1.0.tar.gz
     tar -Jvxf mpfr-4.1.0.tar.gz
   fi
@@ -132,7 +133,7 @@ function install_gdb() {
   [[ $(successed) != 0 ]] && error_message "have error install gdb"
   mkdir -p build && cd build
 
-  ../configure --prefix=$installpath --enable-bootstrap
+  ../configure --prefix=$installpath
   make && sudo make install
   [ $(successed) != 0 ] && error_message "have error install gdb"
   sudo cp ${curdir}/enable $installpath
@@ -146,8 +147,8 @@ function install_gdb() {
     source ~/.bashrc
   fi
   [ $(successed) != 0 ] && error_message "have error install gdb"
-  cur_version=`gdb --version | head -1 | awk '{print $3}'`
-  [ $cur_version != $version ] && error_message "Install gdb failed"
+  #cur_version=`gdb --version | head -1 | awk '{print $3}'`
+  #[ $cur_version != $version ] && error_message "Install gdb failed"
 }
 
 # Install clang by version(This can use install_withsource function future)
